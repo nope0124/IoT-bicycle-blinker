@@ -1,5 +1,6 @@
 package com.example.webacrivity;
 
+import android.widget.EditText;
 import android.widget.TextView;
 import android.os.AsyncTask;
 import android.app.ProgressDialog;
@@ -16,12 +17,14 @@ import org.json.JSONObject;
 public class HttpGetTask extends AsyncTask <Void, Void, String> {
     private TextView mTextView;
     private Activity mParentActivity;
+    private EditText mEditTextName;
     private ProgressDialog mDialog = null;
     //実行するphpのURL
-    private String mUri = "https://maps.googleapis.com/maps/api/directions/json?origin=Tokyo+Station&destination=Shibuya+Station&key=";
-    public HttpGetTask(Activity parentActivity, TextView textView) {
+    private String API_KEY = "";
+    public HttpGetTask(Activity parentActivity, TextView textView, EditText editText) {
         this.mParentActivity = parentActivity;
         this.mTextView = textView;
+        this.mEditTextName = editText;
     }
     //タスク開始時
     @Override
@@ -33,7 +36,12 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
     //メイン処理
     @Override
     protected String doInBackground(Void... voids) {
-        return exec_get();
+        // 目的地の緯度経度を取得
+        double[] latitudeLongitude = getLatitudeLongitude(mEditTextName.getText().toString());
+        double latitude = latitudeLongitude[0];
+        double longitude = latitudeLongitude[1];
+        String res = getRoutes(latitude, longitude);
+        return res;
     }
     //タスク終了時
     @Override
@@ -43,26 +51,48 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
     }
 
 
-    private String exec_get() {
+    private String getRoutes(double latitude, double longitude) {
+        String uri = String.format("https://maps.googleapis.com/maps/api/directions/json?origin=Tokyo+Station&destination=%.7f,%.7f&key=%s", latitude, longitude, API_KEY);
+        String src = "";
+
+        JSONObject data = getDataFromUri(uri);
+        try {
+            // 経路のステップを取得
+            JSONArray routes = data.getJSONArray("routes");
+            JSONObject route = routes.getJSONObject(0);
+            JSONArray legs = route.getJSONArray("legs");
+            JSONObject leg = legs.getJSONObject(0);
+            JSONArray steps = leg.getJSONArray("steps");
+
+            // 各ステップの指示を表示
+            for (int i = 0; i < steps.length(); i++) {
+                JSONObject step = steps.getJSONObject(i);
+                String instruction = step.getString("html_instructions");
+                System.out.println(instruction);
+                src += new String(instruction);
+                src += new String("\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return src;
+    }
+
+    public JSONObject getDataFromUri(String uri) {
         HttpURLConnection http = null;
         BufferedReader reader = null;
         InputStream in = null;
-        String src = "";
+
+        // JSONデータをパース
+        JSONObject data = new JSONObject();
+
         try {
-            URL url = new URL(mUri);
+            URL url = new URL(uri);
             http = (HttpURLConnection)url.openConnection();
             http.setRequestMethod("GET");
             http.connect();
-//            in = http.getInputStream();
-//            byte[] line = new byte[1024];
-//            int size;
-//            while (true) {
-//                size = in.read(line);
-//                if (size <= 0) {
-//                    break;
-//                }
-//                src += new String(line);
-//            }
+
             // レスポンスのステータスコードを確認
             int statusCode = http.getResponseCode();
             if (statusCode == HttpURLConnection.HTTP_OK) {
@@ -77,25 +107,11 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
                 }
 
                 // JSONデータをパース
-                JSONObject data = new JSONObject(response.toString());
+                data = new JSONObject(response.toString());
 
-                // 経路のステップを取得
-                JSONArray routes = data.getJSONArray("routes");
-                JSONObject route = routes.getJSONObject(0);
-                JSONArray legs = route.getJSONArray("legs");
-                JSONObject leg = legs.getJSONObject(0);
-                JSONArray steps = leg.getJSONArray("steps");
-
-                // 各ステップの指示を表示
-                for (int i = 0; i < steps.length(); i++) {
-                    JSONObject step = steps.getJSONObject(i);
-                    String instruction = step.getString("html_instructions");
-                    System.out.println(instruction);
-                    src += new String(instruction);
-                    src += new String("\n");
-                }
             } else {
                 System.out.println("APIリクエストが失敗しました。ステータスコード: " + statusCode);
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,8 +125,34 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
                 }
             } catch (Exception ignored) {
             }
-            return src;
         }
+        return data;
+    }
+
+
+    public double[] getLatitudeLongitude(String destination) {
+
+        String uri = String.format("https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s", destination, API_KEY);
+
+        double latitude = 0.0;
+        double longitude = 0.0;
+
+        JSONObject data = getDataFromUri(uri);
+
+        try {
+            // 経路のステップを取得
+            JSONArray results = data.getJSONArray("results");
+            JSONObject result = results.getJSONObject(0);
+            JSONObject geometry = result.getJSONObject("geometry");
+            JSONObject location = geometry.getJSONObject("location");
+            latitude  = location.getDouble("lat");
+            longitude = location.getDouble("lng");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String str = Double.toString(latitude) + Double.toString(longitude);
+//        return str;
+        return new double[] { latitude, longitude };
     }
 }
 

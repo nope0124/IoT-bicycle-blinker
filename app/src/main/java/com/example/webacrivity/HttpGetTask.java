@@ -1,5 +1,6 @@
 package com.example.webacrivity;
 
+import android.location.LocationManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.os.AsyncTask;
@@ -15,21 +16,37 @@ import org.json.JSONObject;
 
 
 public class HttpGetTask extends AsyncTask <Void, Void, String> {
-    private TextView mTextView;
+    private TextView mRoutesTextView;
+    private TextView mDestinationLatitudeTextView;
+    private TextView mDestinationLongitudeTextView;
     private Activity mParentActivity;
-    private EditText mEditTextName;
+    private EditText mDestinationEditText;
+    private double mOriginLatitude = 0.0;
+    private double mOriginLongitude = 0.0;
+    private double mDestinationLatitude = 0.0;
+    private double mDestinationLongitude = 0.0;
     private ProgressDialog mDialog = null;
-    //実行するphpのURL
+
+
     private String API_KEY = "";
-    public HttpGetTask(Activity parentActivity, TextView textView, EditText editText) {
+    public HttpGetTask(Activity parentActivity, TextView routesTextView, EditText destinationEditText, TextView destinationLatitudeTextView, TextView destinationLongitudeTextView, double originLatitude, double originLongitude) {
         this.mParentActivity = parentActivity;
-        this.mTextView = textView;
-        this.mEditTextName = editText;
+        this.mRoutesTextView = routesTextView;
+        this.mDestinationEditText = destinationEditText;
+        this.mDestinationLatitudeTextView = destinationLatitudeTextView;
+        this.mDestinationLongitudeTextView = destinationLongitudeTextView;
+        this.mOriginLatitude = originLatitude;
+        this.mOriginLongitude = originLongitude;
+        System.out.println("origin_latitude");
+        System.out.println(this.mOriginLatitude);
+        System.out.println("origin_longitude");
+        System.out.println(this.mOriginLongitude);
+
     }
     //タスク開始時
     @Override
     protected void onPreExecute() {
-        mDialog = new ProgressDialog(mParentActivity);
+        mDialog = new ProgressDialog(this.mParentActivity);
         mDialog.setMessage("");
         mDialog.show();
     }
@@ -37,46 +54,27 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
     @Override
     protected String doInBackground(Void... voids) {
         // 目的地の緯度経度を取得
-        double[] latitudeLongitude = getLatitudeLongitude(mEditTextName.getText().toString());
-        double latitude = latitudeLongitude[0];
-        double longitude = latitudeLongitude[1];
-        String res = getRoutes(latitude, longitude);
+        double[] destinationLatitudeLongitude = getLatitudeLongitude(this.mDestinationEditText.getText().toString());
+        this.mDestinationLatitude = destinationLatitudeLongitude[0];
+        this.mDestinationLongitude = destinationLatitudeLongitude[1];
+
+
+
+        System.out.println("destination_latitude");
+        System.out.println(this.mDestinationLatitude);
+        System.out.println("destination_longitude");
+        System.out.println(this.mDestinationLongitude);
+
+        String res = getRoutes(this.mDestinationLatitude, this.mDestinationLongitude);
         return res;
     }
     //タスク終了時
     @Override
     protected void onPostExecute (String string) {
         mDialog.dismiss();
-        this.mTextView.setText(string);
-    }
-
-
-    private String getRoutes(double latitude, double longitude) {
-        String uri = String.format("https://maps.googleapis.com/maps/api/directions/json?origin=Tokyo+Station&destination=%.7f,%.7f&key=%s", latitude, longitude, API_KEY);
-        String src = "";
-
-        JSONObject data = getDataFromUri(uri);
-        try {
-            // 経路のステップを取得
-            JSONArray routes = data.getJSONArray("routes");
-            JSONObject route = routes.getJSONObject(0);
-            JSONArray legs = route.getJSONArray("legs");
-            JSONObject leg = legs.getJSONObject(0);
-            JSONArray steps = leg.getJSONArray("steps");
-
-            // 各ステップの指示を表示
-            for (int i = 0; i < steps.length(); i++) {
-                JSONObject step = steps.getJSONObject(i);
-                String instruction = step.getString("html_instructions");
-                System.out.println(instruction);
-                src += new String(instruction);
-                src += new String("\n");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return src;
+        this.mDestinationLatitudeTextView.setText("目的地緯度: " + Double.toString(this.mDestinationLatitude));
+        this.mDestinationLongitudeTextView.setText("目的地経度: " + Double.toString(this.mDestinationLongitude));
+        this.mRoutesTextView.setText(string);
     }
 
     public JSONObject getDataFromUri(String uri) {
@@ -129,6 +127,34 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
         return data;
     }
 
+
+    private String getRoutes(double destination_latitude, double destination_longitude) {
+        String uri = String.format("https://maps.googleapis.com/maps/api/directions/json?mode=bicycling&origin=%.7f,%.7f&destination=%.7f,%.7f&key=%s", mOriginLatitude, mOriginLongitude, destination_latitude, destination_longitude, API_KEY);
+        String src = "";
+
+        JSONObject data = getDataFromUri(uri);
+        try {
+            // 経路のステップを取得
+            JSONArray routes = data.getJSONArray("routes");
+            JSONObject route = routes.getJSONObject(0);
+            JSONArray legs = route.getJSONArray("legs");
+            JSONObject leg = legs.getJSONObject(0);
+            JSONArray steps = leg.getJSONArray("steps");
+
+            // 各ステップの指示を表示
+            for (int i = 0; i < steps.length(); i++) {
+                JSONObject step = steps.getJSONObject(i);
+                String instruction = step.getString("html_instructions");
+                System.out.println(instruction);
+                src += new String(instruction);
+                src += new String("\n");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return src;
+    }
 
     public double[] getLatitudeLongitude(String destination) {
 

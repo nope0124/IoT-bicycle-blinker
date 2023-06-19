@@ -8,60 +8,82 @@
 
 
     <TextView
-        android:id="@+id/text_view_html"
+        android:id="@+id/text_view_origin_latitude"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="HTML表示"
+        android:text="現在地緯度"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.15"
+        app:layout_constraintHorizontal_bias="0.293"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.807" />
+        app:layout_constraintVertical_bias="0.333" />
 
     <TextView
-        android:id="@+id/text_view_destination"
+        android:id="@+id/text_view_origin_longitude"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="目的地表示"
+        android:text="現在地経度"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.179"
+        app:layout_constraintHorizontal_bias="0.703"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.278" />
+        app:layout_constraintVertical_bias="0.333" />
+
+    <TextView
+        android:id="@+id/text_view_destination_latitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="目的地緯度"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.293"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.426" />
+
+    <TextView
+        android:id="@+id/text_view_destination_longitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="目的地経度"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.703"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.426" />
+
+    <TextView
+        android:id="@+id/text_view_routes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ルート表示"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.522" />
 
     <Button
-        android:id="@+id/button_html"
+        android:id="@+id/button_get_routes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="HTML取得"
+        android:text="ルート取得"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.111"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.023" />
-
-
-    <Button
-        android:id="@+id/button_destination"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="目的地取得"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.15"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.471" />
+        app:layout_constraintVertical_bias="0.206" />
 
     <EditText
         android:id="@+id/edit_text_destination"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="460dp"
-        android:hint="Enter Destination"
+        android:layout_marginTop="36dp"
+        android:hint="目的地を入力"
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

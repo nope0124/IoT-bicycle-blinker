@@ -71,14 +71,19 @@ public class HttpGetTask extends AsyncTask <String, Void, String> {
             System.out.println(this.mDestinationLongitude);
 
             JSONArray res = getRoutes(this.mDestinationLatitude, this.mDestinationLongitude);
+            System.out.println("######");
+            System.out.println(res);
+            System.out.println("######");
+
             sResult = res;
         }else if(param == "RaspberryPi") {
             HttpURLConnection http = null;
             BufferedReader reader = null;
             InputStream in = null;
             String lr = params[1];
-            String stat = params[2];
-            String uri = String.format("http://192.168.32.32/~pi/ledtest.php?lr=%s&stat=%s", lr, stat);
+            String length = params[2];
+            String uri = String.format("http://172.20.10.8/~pi/navi2.php?lr=%s&length=%s", lr, length);
+            System.out.println(uri);
             try {
                 URL url = new URL(uri);
                 http = (HttpURLConnection) url.openConnection();
@@ -163,7 +168,7 @@ public class HttpGetTask extends AsyncTask <String, Void, String> {
 
 
     private JSONArray getRoutes(double destination_latitude, double destination_longitude) {
-        String uri = String.format("https://maps.googleapis.com/maps/api/directions/json?mode=bicycling&language=ja&origin=%.7f,%.7f&destination=%.7f,%.7f&key=%s", mOriginLatitude, mOriginLongitude, destination_latitude, destination_longitude, API_KEY);
+        String uri = String.format("https://maps.googleapis.com/maps/api/directions/json?language=ja&origin=%.7f,%.7f&destination=%.7f,%.7f&key=%s", mOriginLatitude, mOriginLongitude, destination_latitude, destination_longitude, API_KEY);
         JSONArray src = new JSONArray();;
 
         JSONObject data = getDataFromUri(uri);
@@ -174,6 +179,7 @@ public class HttpGetTask extends AsyncTask <String, Void, String> {
             JSONArray legs = route.getJSONArray("legs");
             JSONObject leg = legs.getJSONObject(0);
             JSONArray steps = leg.getJSONArray("steps");
+
             src = steps;
 
             // 各ステップの指示を表示

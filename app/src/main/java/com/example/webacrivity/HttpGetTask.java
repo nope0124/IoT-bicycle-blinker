@@ -15,7 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 
-public class HttpGetTask extends AsyncTask <Void, Void, String> {
+public class HttpGetTask extends AsyncTask <String, Void, String> {
     private TextView mRoutesTextView;
     private TextView mDestinationLatitudeTextView;
     private TextView mDestinationLongitudeTextView;
@@ -26,6 +26,12 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
     private double mDestinationLatitude = 0.0;
     private double mDestinationLongitude = 0.0;
     private ProgressDialog mDialog = null;
+
+    private static JSONArray sResult = new JSONArray();
+
+    public static JSONArray getResult() {
+        return sResult;
+    }
 
 
     private String API_KEY = "";
@@ -41,7 +47,6 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
         System.out.println(this.mOriginLatitude);
         System.out.println("origin_longitude");
         System.out.println(this.mOriginLongitude);
-
     }
     //タスク開始時
     @Override
@@ -52,21 +57,50 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
     }
     //メイン処理
     @Override
-    protected String doInBackground(Void... voids) {
-        // 目的地の緯度経度を取得
-        double[] destinationLatitudeLongitude = getLatitudeLongitude(this.mDestinationEditText.getText().toString());
-        this.mDestinationLatitude = destinationLatitudeLongitude[0];
-        this.mDestinationLongitude = destinationLatitudeLongitude[1];
+    protected String doInBackground(String... params) {
+        String param = params[0];
+        if(param == "Routes") {
+            // 目的地の緯度経度を取得
+            double[] destinationLatitudeLongitude = getLatitudeLongitude(this.mDestinationEditText.getText().toString());
+            this.mDestinationLatitude = destinationLatitudeLongitude[0];
+            this.mDestinationLongitude = destinationLatitudeLongitude[1];
 
+            System.out.println("destination_latitude");
+            System.out.println(this.mDestinationLatitude);
+            System.out.println("destination_longitude");
+            System.out.println(this.mDestinationLongitude);
 
+            JSONArray res = getRoutes(this.mDestinationLatitude, this.mDestinationLongitude);
+            sResult = res;
+        }else if(param == "RaspberryPi") {
+            HttpURLConnection http = null;
+            BufferedReader reader = null;
+            InputStream in = null;
+            String lr = params[1];
+            String stat = params[2];
+            String uri = String.format("http://192.168.32.32/~pi/ledtest.php?lr=%s&stat=%s", lr, stat);
+            try {
+                URL url = new URL(uri);
+                http = (HttpURLConnection) url.openConnection();
+                http.setRequestMethod("GET");
+                http.connect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                    if (in != null) {
+                        in.close();
+                    }
+                } catch (Exception ignored) {
+                }
+            }
 
-        System.out.println("destination_latitude");
-        System.out.println(this.mDestinationLatitude);
-        System.out.println("destination_longitude");
-        System.out.println(this.mDestinationLongitude);
+        }
 
-        String res = getRoutes(this.mDestinationLatitude, this.mDestinationLongitude);
-        return res;
+        return "";
     }
     //タスク終了時
     @Override
@@ -74,7 +108,8 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
         mDialog.dismiss();
         this.mDestinationLatitudeTextView.setText("目的地緯度: " + Double.toString(this.mDestinationLatitude));
         this.mDestinationLongitudeTextView.setText("目的地経度: " + Double.toString(this.mDestinationLongitude));
-        this.mRoutesTextView.setText(string);
+//        this.mRoutesTextView.setText(string);
+
     }
 
     public JSONObject getDataFromUri(String uri) {
@@ -109,7 +144,6 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
 
             } else {
                 System.out.println("APIリクエストが失敗しました。ステータスコード: " + statusCode);
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -128,9 +162,9 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
     }
 
 
-    private String getRoutes(double destination_latitude, double destination_longitude) {
-        String uri = String.format("https://maps.googleapis.com/maps/api/directions/json?mode=bicycling&origin=%.7f,%.7f&destination=%.7f,%.7f&key=%s", mOriginLatitude, mOriginLongitude, destination_latitude, destination_longitude, API_KEY);
-        String src = "";
+    private JSONArray getRoutes(double destination_latitude, double destination_longitude) {
+        String uri = String.format("https://maps.googleapis.com/maps/api/directions/json?mode=bicycling&language=ja&origin=%.7f,%.7f&destination=%.7f,%.7f&key=%s", mOriginLatitude, mOriginLongitude, destination_latitude, destination_longitude, API_KEY);
+        JSONArray src = new JSONArray();;
 
         JSONObject data = getDataFromUri(uri);
         try {
@@ -140,15 +174,16 @@ public class HttpGetTask extends AsyncTask <Void, Void, String> {
             JSONArray legs = route.getJSONArray("legs");
             JSONObject leg = legs.getJSONObject(0);
             JSONArray steps = leg.getJSONArray("steps");
+            src = steps;
 
             // 各ステップの指示を表示
-            for (int i = 0; i < steps.length(); i++) {
-                JSONObject step = steps.getJSONObject(i);
-                String instruction = step.getString("html_instructions");
-                System.out.println(instruction);
-                src += new String(instruction);
-                src += new String("\n");
-            }
+//            for (int i = 0; i < steps.length(); i++) {
+//                JSONObject step = steps.getJSONObject(i);
+//                String instruction = step.getString("html_instructions");
+//                System.out.println(instruction);
+//                src += new String(instruction);
+//                src += new String("\n");
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }

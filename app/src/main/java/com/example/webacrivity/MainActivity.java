@@ -22,6 +22,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -47,7 +51,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // MainActivity
     private MainActivity activity = this;
 
-    private boolean flag = true;
+    // JSONArray
+    private JSONArray steps = new JSONArray();
+
+    // idx
+    private int idx = 0;
+
+    private boolean startFlag = true;
 
     private static final int PERMISSIONS_REQUEST = 1;
 
@@ -79,12 +89,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         Log.d("WebActivity", "wlog onClick()");
-        if(flag) {
-            HttpGetTask task = new HttpGetTask(activity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, 35.663546, 140.079379);
-            task.execute();
-            flag = false;
-        }
-//        getLocation();
+//        if(startFlag) {
+//            HttpGetTask task = new HttpGetTask(activity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, 35.663546, 140.079379);
+//            task.execute();
+//            try {
+//                Thread.sleep(3000); // 3秒待つ
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            this.steps = HttpGetTask.getResult();
+//            startFlag = false;
+//        }else {
+//            try {
+//                JSONObject step = this.steps.getJSONObject(idx);
+//                String instruction = step.getString("html_instructions");
+//                JSONObject end_location = step.getJSONObject("end_location");
+//                double currentDestinationLatitude = end_location.getDouble("lat");
+//                double currentDestinationLongitude = end_location.getDouble("lng");
+//                Location currentDestinationLocation = new Location("dummyprovider");
+//                currentDestinationLocation.setLatitude(currentDestinationLatitude);
+//                currentDestinationLocation.setLongitude(currentDestinationLongitude);
+//                double distanceToCurrentDestination = location.distanceTo(currentDestinationLocation) / 1000;
+//                if()
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+////            this.mRoutesTextView.setText(HttpGetTask.getResult());
+//        }
+        getLocation();
 //        HttpGetTask task = new HttpGetTask(this, mReturnTextView, mEditTextName);
 //
 //        if (view.getId() == R.id.button_html) {
@@ -109,11 +142,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onLocationChanged(Location location) {
             mOriginLatitudeTextView.setText("現在地緯度: " + location.getLatitude());
             mOriginLongitudeTextView.setText("現在地経度: " + location.getLongitude());
-            if(flag) {
+            if(startFlag) {
                 HttpGetTask task = new HttpGetTask(activity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, location.getLatitude(), location.getLongitude());
-                task.execute();
-                flag = false;
+                task.execute("Routes", "", "");
+                try {
+                    Thread.sleep(3000); // 3秒待つ
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                steps = HttpGetTask.getResult();
+                startFlag = false;
+            }else {
+                try {
+                    JSONObject step = steps.getJSONObject(idx);
+                    String instruction = step.getString("html_instructions");
+                    JSONObject end_location = step.getJSONObject("end_location");
+                    double currentDestinationLatitude = end_location.getDouble("lat");
+                    double currentDestinationLongitude = end_location.getDouble("lng");
+                    Location currentDestinationLocation = new Location("dummyprovider");
+                    currentDestinationLocation.setLatitude(currentDestinationLatitude);
+                    currentDestinationLocation.setLongitude(currentDestinationLongitude);
+                    double distanceToCurrentDestination = location.distanceTo(currentDestinationLocation) / 1000;
+                    HttpGetTask task = new HttpGetTask(activity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, location.getLatitude(), location.getLongitude());
+                    Integer lr = convertAndCheckDirection(instruction);
+                    task.execute("RaspberryPi", Integer.toString(lr), Double.toString(distanceToCurrentDestination));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
+
+//            this.mRoutesTextView.setText(HttpGetTask.getResult());
+
 //            Point nearestPoint = findNearestPoint(location, points);
 //            if (nearestPoint != null) {
 //                double distanceToNearestPoint = location.distanceTo(nearestPoint.getLocation()) / 1000;
@@ -131,6 +190,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                }
 //            }
 //            nearbyPointsText.setText(nearbyPointsStr.toString());
+        }
+
+
+        public Integer convertAndCheckDirection(String unicodeEscapedString) {
+            // UTF-8文字列に変換
+            String utf8String = unescapeUnicode(unicodeEscapedString);
+
+            // HTMLタグを削除
+            String text = removeHtmlTags(utf8String);
+
+            // "右"が含まれる場合は1を返す
+            if (text.contains("右")) {
+                return 1;
+            }
+
+            // "左"が含まれる場合は0を返す
+            if (text.contains("左")) {
+                return 0;
+            }
+
+            // "右"も"左"も含まれない場合はnullを返す
+            return null;
+        }
+
+        public String unescapeUnicode(String str) {
+            StringBuilder utf8String = new StringBuilder();
+            Matcher matcher = Pattern.compile("\\\\u([0-9a-fA-F]{4})").matcher(str);
+            while (matcher.find()) {
+                int codePoint = Integer.parseInt(matcher.group(1), 16);
+                utf8String.append((char) codePoint);
+            }
+            return utf8String.toString();
+        }
+
+        public String removeHtmlTags(String htmlString) {
+            // HTMLタグを検索する正規表現パターン
+            Pattern htmlTagPattern = Pattern.compile("<[^>]*>");
+
+            // 正規表現でマッチする部分を空の文字列に置き換え
+            Matcher matcher = htmlTagPattern.matcher(htmlString);
+            String text = matcher.replaceAll("");
+
+            return text;
         }
 
 //        private Point findNearestPoint(Location location, List<Point> points) {

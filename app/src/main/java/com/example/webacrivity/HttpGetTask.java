@@ -78,6 +78,7 @@ public class HttpGetTask extends AsyncTask <String, Void, String> {
             String lr = params[1];
             String length = params[2];
             String uri = String.format("http://172.20.10.8/~pi/navi2.php?lr=%s&length=%s", lr, length);
+            System.out.println(uri);
 
             HttpURLConnection http = null;
             InputStream in = null;

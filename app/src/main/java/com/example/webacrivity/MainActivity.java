@@ -48,7 +48,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // int
     private int mRouteIndex = 0;
     private int mLocationChangedCount = 0;
-    private final int mPerCount = 6; // 1分に10回実行
+    private final int mPerCount = 2; // 1分に30回実行
+
+    private final int mNextDestinationBorder = 10;
 
     private boolean mStartFlag = true;
 
@@ -99,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mOriginLatitudeTextView.setText("現在地緯度: " + location.getLatitude());
             mOriginLongitudeTextView.setText("現在地経度: " + location.getLongitude());
 
-            System.out.println(mLocationChangedCount);
             // １回目だけ、Google Directions APIを叩く
             if(mStartFlag == true) {
                 mStartFlag = false;
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // 経路情報を取得
                 mSteps = HttpGetTask.getResult();
             }else if(mStartFlag == false && mLocationChangedCount % mPerCount == 0) {
-
+                if(mRouteIndex == mSteps.length()) return;
                 try {
                     JSONObject step = mSteps.getJSONObject(mRouteIndex);
 
@@ -139,7 +140,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     double distanceToCurrentDestination = location.distanceTo(currentDestinationLocation);
 
                     // このタイミングで経路説明と、一時終点までの距離を描画
-                    mRoutesTextView.setText(String.format("%s\n%s", instruction, Double.toString(distanceToCurrentDestination)));
+                    String text = "";
+                    for(int i = mRouteIndex; i < mSteps.length(); i++) {
+                        text += instruction;
+                        text += "\n";
+                        text += Double.toString(distanceToCurrentDestination);
+                        text += "\n";
+                    }
+                    mRoutesTextView.setText(text);
 
                     // RaspberryPiに渡す引数
                     int lr = convertAndCheckDirection(instruction);
@@ -148,6 +156,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // RaspberryPiを呼び出す
                     HttpGetTask task = new HttpGetTask(mActivity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, location.getLatitude(), location.getLongitude());
                     task.execute("RaspberryPi", Integer.toString(lr), Integer.toString(length));
+
+                    if(length <= mNextDestinationBorder) {
+                        mRouteIndex++;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

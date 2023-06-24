@@ -73,10 +73,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // TextView
         mRoutesTextView = (TextView) findViewById(R.id.text_view_routes);
-        mOriginLatitudeTextView = (TextView) findViewById(R.id.text_view_origin_latitude);
-        mOriginLongitudeTextView = (TextView) findViewById(R.id.text_view_origin_longitude);
-        mDestinationLatitudeTextView = (TextView) findViewById(R.id.text_view_destination_latitude);
-        mDestinationLongitudeTextView = (TextView) findViewById(R.id.text_view_destination_longitude);
+//        mOriginLatitudeTextView = (TextView) findViewById(R.id.text_view_origin_latitude);
+//        mOriginLongitudeTextView = (TextView) findViewById(R.id.text_view_origin_longitude);
+//        mDestinationLatitudeTextView = (TextView) findViewById(R.id.text_view_destination_latitude);
+//        mDestinationLongitudeTextView = (TextView) findViewById(R.id.text_view_destination_longitude);
 
     }
 
@@ -98,8 +98,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final LocationListener locationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
             mLocationChangedCount++;
-            mOriginLatitudeTextView.setText("現在地緯度: " + location.getLatitude());
-            mOriginLongitudeTextView.setText("現在地経度: " + location.getLongitude());
+//            mOriginLatitudeTextView.setText("現在地緯度: " + location.getLatitude());
+//            mOriginLongitudeTextView.setText("現在地経度: " + location.getLongitude());
 
             // １回目だけ、Google Directions APIを叩く
             if(mStartFlag == true) {
@@ -144,10 +144,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     for(int i = mRouteIndex; i < mSteps.length(); i++) {
                         JSONObject tmpStep = mSteps.getJSONObject(i);
                         String tmpInstruction = tmpStep.getString("html_instructions");
-                        text += tmpInstruction;
+                        text += Integer.toString(i + 1);
+                        text += "．";
+                        text += removeTags(tmpInstruction);
                         text += "\n";
                         if(i == mRouteIndex) {
-                            text += Double.toString(distanceToCurrentDestination);
+                            if(i == mSteps.length() - 1) text += "目的地まで　あと";
+                            else text += "次の中継点まで　あと";
+                            text += Integer.toString((int)distanceToCurrentDestination);
+                            text += "m";
+                            text += "\n";
                             text += "\n";
                         }
                     }
@@ -158,8 +164,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     int length = (int)distanceToCurrentDestination;
 
                     // RaspberryPiを呼び出す
-                    HttpGetTask task = new HttpGetTask(mActivity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, location.getLatitude(), location.getLongitude());
-                    task.execute("RaspberryPi", Integer.toString(lr), Integer.toString(length));
+//                    HttpGetTask task = new HttpGetTask(mActivity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, location.getLatitude(), location.getLongitude());
+//                    task.execute("RaspberryPi", Integer.toString(lr), Integer.toString(length));
 
                     if(length <= mNextDestinationBorder) {
                         mRouteIndex++;
@@ -185,6 +191,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             // "右"も"左"も含まれない場合は1を返す
             return 1;
+        }
+
+        public String removeTags(String unicodeEscapedString) {
+            // HTMLタグを削除
+            unicodeEscapedString = unicodeEscapedString.replaceAll("使用が制限されている道路", "　");
+            return unicodeEscapedString.replaceAll("<[^>]+>", "");
         }
 
         public String unescapeUnicode(String str) {

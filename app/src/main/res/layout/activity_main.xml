@@ -6,66 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
-    <TextView
-        android:id="@+id/text_view_origin_latitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="現在地緯度"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.293"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.333" />
-
-    <TextView
-        android:id="@+id/text_view_origin_longitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="現在地経度"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.703"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.333" />
-
-    <TextView
-        android:id="@+id/text_view_destination_latitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="目的地緯度"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.293"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.426" />
-
-    <TextView
-        android:id="@+id/text_view_destination_longitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="目的地経度"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.703"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.426" />
-
     <TextView
         android:id="@+id/text_view_routes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ルート表示"
+        android:text="ルート表示\n\n\n\n\n\n\n\n"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.522" />
+        app:layout_constraintTop_toBottomOf="@+id/button_get_routes"
+        app:layout_constraintVertical_bias="0.145" />
 
     <Button
         android:id="@+id/button_get_routes"
@@ -76,7 +27,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.206" />
+        app:layout_constraintVertical_bias="0.158" />
 
     <EditText
         android:id="@+id/edit_text_destination"

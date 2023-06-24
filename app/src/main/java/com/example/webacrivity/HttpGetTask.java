@@ -114,8 +114,8 @@ public class HttpGetTask extends AsyncTask <String, Void, String> {
     @Override
     protected void onPostExecute (String string) {
 //        mDialog.dismiss();
-        this.mDestinationLatitudeTextView.setText("目的地緯度: " + Double.toString(this.mDestinationLatitude));
-        this.mDestinationLongitudeTextView.setText("目的地経度: " + Double.toString(this.mDestinationLongitude));
+//        this.mDestinationLatitudeTextView.setText("目的地緯度: " + Double.toString(this.mDestinationLatitude));
+//        this.mDestinationLongitudeTextView.setText("目的地経度: " + Double.toString(this.mDestinationLongitude));
     }
 
 

@@ -142,10 +142,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // このタイミングで経路説明と、一時終点までの距離を描画
                     String text = "";
                     for(int i = mRouteIndex; i < mSteps.length(); i++) {
-                        text += instruction;
+                        JSONObject tmpStep = mSteps.getJSONObject(i);
+                        String tmpInstruction = tmpStep.getString("html_instructions");
+                        text += tmpInstruction;
                         text += "\n";
-                        text += Double.toString(distanceToCurrentDestination);
-                        text += "\n";
+                        if(i == mRouteIndex) {
+                            text += Double.toString(distanceToCurrentDestination);
+                            text += "\n";
+                        }
                     }
                     mRoutesTextView.setText(text);
 

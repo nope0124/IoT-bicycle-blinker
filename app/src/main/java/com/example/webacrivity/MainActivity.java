@@ -119,7 +119,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // 経路情報を取得
                 mSteps = HttpGetTask.getResult();
             }else if(mStartFlag == false && mLocationChangedCount % mPerCount == 0) {
-                if(mRouteIndex == mSteps.length()) return;
+                if(mRouteIndex == mSteps.length()) {
+                    String text = "到着！";
+                    mRoutesTextView.setText(text);
+                    return;
+                }
                 try {
                     JSONObject step = mSteps.getJSONObject(mRouteIndex);
 

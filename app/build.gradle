@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.webacrivity'
+    namespace 'com.example.webactivity'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.webacrivity"
+        applicationId "com.example.webactivity"
         minSdk 22
         targetSdk 33
         versionCode 1

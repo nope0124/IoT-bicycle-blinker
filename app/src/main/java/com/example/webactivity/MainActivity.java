@@ -1,4 +1,4 @@
-package com.example.webacrivity;
+package com.example.webactivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -73,11 +73,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // TextView
         mRoutesTextView = (TextView) findViewById(R.id.text_view_routes);
-//        mOriginLatitudeTextView = (TextView) findViewById(R.id.text_view_origin_latitude);
-//        mOriginLongitudeTextView = (TextView) findViewById(R.id.text_view_origin_longitude);
-//        mDestinationLatitudeTextView = (TextView) findViewById(R.id.text_view_destination_latitude);
-//        mDestinationLongitudeTextView = (TextView) findViewById(R.id.text_view_destination_longitude);
-
     }
 
     @Override
@@ -98,8 +93,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final LocationListener locationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
             mLocationChangedCount++;
-//            mOriginLatitudeTextView.setText("現在地緯度: " + location.getLatitude());
-//            mOriginLongitudeTextView.setText("現在地経度: " + location.getLongitude());
 
             // １回目だけ、Google Directions APIを叩く
             if(mStartFlag == true) {
@@ -126,9 +119,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 try {
                     JSONObject step = mSteps.getJSONObject(mRouteIndex);
-
-                    // 経路説明
-                    String instruction = step.getString("html_instructions");
 
                     // 一時終点までの緯度経度
                     JSONObject end_location = step.getJSONObject("end_location");
@@ -163,13 +153,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     mRoutesTextView.setText(text);
 
+                    String instruction = "";
+
+                    if(mRouteIndex + 1 < mSteps.length()) {
+                        JSONObject nextStep = mSteps.getJSONObject(mRouteIndex + 1);
+                        instruction = nextStep.getString("html_instructions");
+                    }
+
                     // RaspberryPiに渡す引数
                     int lr = convertAndCheckDirection(instruction);
                     int length = (int)distanceToCurrentDestination;
 
                     // RaspberryPiを呼び出す
-//                    HttpGetTask task = new HttpGetTask(mActivity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, location.getLatitude(), location.getLongitude());
-//                    task.execute("RaspberryPi", Integer.toString(lr), Integer.toString(length));
+                    HttpGetTask task = new HttpGetTask(mActivity, mRoutesTextView, mDestinationEditText, mDestinationLatitudeTextView, mDestinationLongitudeTextView, location.getLatitude(), location.getLongitude());
+                    task.execute("RaspberryPi", Integer.toString(lr), Integer.toString(length));
 
                     if(length <= mNextDestinationBorder) {
                         mRouteIndex++;
@@ -182,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         public int convertAndCheckDirection(String unicodeEscapedString) {
             // UTF-8文字列に変換
-            String utf8String = unescapeUnicode(unicodeEscapedString);
+            String utf8String = unicodeEscapedString;
 
             // HTMLタグを削除
             String text = removeHtmlTags(utf8String);
@@ -201,16 +198,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // HTMLタグを削除
             unicodeEscapedString = unicodeEscapedString.replaceAll("使用が制限されている道路", "　");
             return unicodeEscapedString.replaceAll("<[^>]+>", "");
-        }
-
-        public String unescapeUnicode(String str) {
-            StringBuilder utf8String = new StringBuilder();
-            Matcher matcher = Pattern.compile("\\\\u([0-9a-fA-F]{4})").matcher(str);
-            while (matcher.find()) {
-                int codePoint = Integer.parseInt(matcher.group(1), 16);
-                utf8String.append((char) codePoint);
-            }
-            return utf8String.toString();
         }
 
         public String removeHtmlTags(String htmlString) {

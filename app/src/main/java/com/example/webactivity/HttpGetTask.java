@@ -1,4 +1,4 @@
-package com.example.webacrivity;
+package com.example.webactivity;
 
 import android.widget.EditText;
 import android.widget.TextView;

@@ -1,4 +1,4 @@
-package com.example.webacrivity;
+package com.example.webactivity;
 
 import org.junit.Test;
 
